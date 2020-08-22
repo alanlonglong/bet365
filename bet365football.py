@@ -77,6 +77,10 @@ for competition in all_competitions:
     team_cards_side=[]
     team_cards_line=[]
     team_cards_odds=[]
+    players=[]
+    player_odds=[]
+    goalscorers=[]
+    anytime_odds=[]
     
     # we cut the list in half because the first half of the list ends up being garbage for some reason
     teams[:]=teams[int(len(teams)/2):] 
@@ -91,6 +95,9 @@ for competition in all_competitions:
             break
         except:
             pass
+            
+    
+           
             
     i=0        
     while i<num_team_names:
@@ -112,6 +119,61 @@ for competition in all_competitions:
                 break
             except:
                 pass
+                
+        
+    found_it=False
+    while not found_it:
+        try:
+            tabs=driver.find_elements_by_class_name('sph-MarketGroupNavBarButton')
+            for t in tabs:
+                if t.text=='Player':
+                    found_it=True
+                    t.click()
+                    break
+        except:
+            pass   
+
+    found_it=False
+    while not found_it:
+        try:
+            more=driver.find_elements_by_class_name('msl-ShowMore_Link')
+            for m in more:
+                if m.text=='Show more':
+                    m.click()
+                    found_it=True
+                    break
+        except:
+            pass     
+
+    found_it=False
+    while not found_it:
+        try:
+            show_less=driver.find_elements_by_class_name('msl-ShowMore_Link')
+            for sl in show_less:
+                if sl.text=='Show less':
+                    found_it=True
+        except:
+            pass
+            
+    found_it=False
+    while not found_it:
+        try:
+            headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
+            for h in headers:
+                if h.text=='Goalscorers':
+                    scorers=driver.find_elements_by_class_name('srb-ParticipantLabel_Name')
+                    for s in scorers:
+                        if s.text != 'No Goalscorer':
+                            goalscorers.append(s.text)
+
+            anytime=driver.find_elements_by_class_name('gl-Market_General-lastinrow')           
+            a_odds=anytime[0].find_elements_by_class_name('gl-ParticipantOddsOnly_Odds')
+            for a in a_odds:
+                anytime_odds.append(a.text)
+                found_it=True
+        except:
+            pass                
+                
                 
         found_it=False
         while not found_it:
@@ -163,13 +225,13 @@ for competition in all_competitions:
                     if tc.text=='Team Cards':
                         team1=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div/div')
                         team1over_line=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div/div[position()=2]/span')
-                        team1over_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/span[position()=2]')
+                        team1over_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div/div[position()=2]/span[position()=2]')
                         team1under_line=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div/div[position()=3]/span')
-                        team1under_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=3]/span[position()=2]')                        
+                        team1under_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div/div[position()=3]/span[position()=2]')                        
                         
                         team2=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div')
-                        team2over_line=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div[position()=2]/div[position()=2]/span[position()=1]')
-                        team2over_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div[position()=2]/div[position()=2]/span[position()=2]')
+                        team2over_line=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div[position()=2]/span')
+                        team2over_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div[position()=2]/span[position()=2]')
                         team2under_line=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div[position()=3]/span[position()=1]')
                         team2under_odds=tc.find_elements_by_xpath('//*[text() = "Team Cards"]/parent::div/following-sibling::div/div/div[position()=2]/div[position()=3]/span[position()=2]')
                         
@@ -177,10 +239,57 @@ for competition in all_competitions:
                         break
                 
             except:
-                pass        
+                pass   
+
+        found_it=False
+        while not found_it:
+            try:
+                player_to_be_booked=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
+                for p in player_to_be_booked:
+                    if p.text=='Player to be booked':
+                        p.click()
+                        found_it=True
+                        break
+            except:
+                pass
                 
+        found_it=False
+        while not found_it:
+            try:
+                more=driver.find_elements_by_class_name('msl-ShowMore_Link')
+                for m in more:
+                    if m.text=='Show more':
+                        m.click()
+                        found_it=True
+                        break
+            except:
+                pass
                 
+        found_it=False
+        while not found_it:
+            try:
+                # players=driver.find_elements_by_class_name("gl-ParticipantBorderless_Name")
+                player_odds=driver.find_elements_by_class_name('gl-Market_General-cn2')
+                for po in player_odds:
+                    pl_o=po.text.split('\n')
+                    if not isinstance(pl_o[1],str):
+                        continue
+                    
+                    players.append(pl_o[0])
+                    player_odds.append(pl_o[1])
+                    found_it=True
+
+            except:
+                pass
                 
+        
+
+        
+                        
+
+        # we cut the list in half because the first half of the list ends up being garbage for some reason         
+        player_odds[:]=player_odds[-len(players):]
+        
         total_cards_line.append(lines[0].text) 
         total_cards_line.append(lines[0].text) 
         total_cards_side.append('Over')
@@ -216,7 +325,8 @@ for competition in all_competitions:
         
         
         
-        driver.get(current_url)  
+        driver.get(current_url)     
+       
 
     db=MySQLdb.connect(host="127.0.0.1", port=3306, user="root", passwd="a6!modern", db="football")
     cursor=db.cursor()
@@ -227,6 +337,15 @@ for competition in all_competitions:
     for team in teams:    
         sql="INSERT INTO teams (name) SELECT * FROM (SELECT '" + team + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM teams WHERE name = '" + team + "') LIMIT 1;"    
         cursor.execute(sql)
+        
+    for player in players:
+        sql="INSERT INTO players (name) SELECT * FROM (SELECT '" + player + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM players WHERE name = '" + player + "') LIMIT 1;"
+        cursor.execute(sql)
+        
+    for goalscorer in goalscorers:
+        sql="INSERT INTO players (name) SELECT * FROM (SELECT '" + goalscorer + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM players WHERE name = '" + goalscorer + "') LIMIT 1;"
+        cursor.execute(sql)
+        
     increment=0
     increment2=0
     for i in range(len(fixtures)):
@@ -269,6 +388,21 @@ for competition in all_competitions:
         sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[i+3+increment2] + "','" + team_cards_side[i+3+increment2] + "','" + team_cards_odds[i+3+increment2] + "');"
         cursor.execute(sql)
         
+        for j in range(len(players)):
+            sql="SELECT id FROM players WHERE name = '" + players[j] + "';"
+            cursor.execute(sql)
+            player_id=cursor.fetchone()[0]
+            
+            sql="INSERT INTO player_to_be_carded (fixture_id, player_id, odds) VALUES (" + str(fixture_id) + "," + str(player_id) + ",'" + str(player_odds[j]) + "');"
+            cursor.execute(sql)
+            
+        for j in range(len(goalscorers)):
+            sql="SELECT id FROM players WHERE name = '" + goalscorers[j] + "';"
+            cursor.execute(sql)
+            player_id=cursor.fetchone()[0]
+            
+            sql="INSERT INTO goalscorer (fixture_id, player_id, odds) VALUES (" + str(fixture_id) + "," + str(player_id) + ",'" + str(anytime_odds[j]) + "');"
+            cursor.execute(sql)
         
         
         
