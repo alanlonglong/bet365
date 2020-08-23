@@ -7,6 +7,8 @@ import time
 f=open('spiro.ini','r')
 lines=f.readlines()
 all_competitions=lines[0].split(':')[1].replace('\n','').split(',')
+user=lines[1].split(':')[1].replace('\n','')
+passwd=lines[2].split(':')[1].replace('\n','')
 
 f.close()
 
@@ -128,16 +130,21 @@ for competition in all_competitions:
             except:
                 pass
         
-        while True:
+        stop=0
+        start=time.time()
+        while True or ( stop-start<10):
             try:
                 this_date=driver.find_element_by_class_name('sph-ExtraData_TimeStamp')
                 dts.append(this_date.text)
                 break
             except:
+                stop=time.time()
                 pass
      
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 tabs=driver.find_elements_by_class_name('sph-MarketGroupNavBarButton')
                 for t in tabs:
@@ -146,10 +153,13 @@ for competition in all_competitions:
                         t.click()
                         break
             except:
+                stop=time.time()
                 pass 
                 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                 for h in headers:
@@ -183,10 +193,13 @@ for competition in all_competitions:
                                 found_it=True
         
             except:
+                stop=time.time()
                 pass             
                 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                 for h in headers:
@@ -213,10 +226,13 @@ for competition in all_competitions:
                                 found_it=True
         
             except:
+                stop=time.time()
                 pass
                 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                 for h in headers:
@@ -243,10 +259,13 @@ for competition in all_competitions:
                                 found_it=True
         
             except:
+                stop=time.time()
                 pass
 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                 for h in headers:
@@ -265,11 +284,14 @@ for competition in all_competitions:
                                 asian_handicap_odds.append(item.text)
         
             except:
+                stop=time.time()
                 pass
 
         found_it=False
         these_sides=['Home','Tie','Away']
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                 for h in headers:
@@ -284,10 +306,13 @@ for competition in all_competitions:
                                 k+=1
                                 found_it=True
             except:
+                stop=time.time()
                 pass
             
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 tabs=driver.find_elements_by_class_name('sph-MarketGroupNavBarButton')
                 for t in tabs:
@@ -296,10 +321,13 @@ for competition in all_competitions:
                         t.click()
                         break
             except:
+                stop=time.time()
                 pass   
 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 more=driver.find_elements_by_class_name('msl-ShowMore_Link')
                 for m in more:
@@ -308,20 +336,26 @@ for competition in all_competitions:
                         found_it=True
                         break
             except:
+                stop=time.time()
                 pass     
 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 show_less=driver.find_elements_by_class_name('msl-ShowMore_Link')
                 for sl in show_less:
                     if sl.text=='Show less':
                         found_it=True
             except:
+                stop=time.time()
                 pass
                 
         found_it=False
-        while not found_it:
+        stop=0
+        start=time.time()
+        while not found_it and stop-start<10:
             try:
                 headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                 for h in headers:
@@ -337,11 +371,14 @@ for competition in all_competitions:
                     anytime_odds.append(a.text)
                     found_it=True
             except:
+                stop=time.time()
                 pass                
                     
                     
             found_it=False
-            while not found_it:
+            stop=0
+            start=time.time()
+            while not found_it and stop-start<10:
                 try:
                     cards=driver.find_elements_by_class_name('sph-MarketGroupNavBarButton')
                     for c in cards:
@@ -350,6 +387,7 @@ for competition in all_competitions:
                             c.click()
                             break
                 except:
+                    stop=time.time()
                     pass
                     
             found_it=False
@@ -494,7 +532,7 @@ for competition in all_competitions:
        
 
     # we have lists of data we need; now we need to add that data to our database
-    db=MySQLdb.connect(host="127.0.0.1", port=3306, user="root", passwd="a6!modern", db="football")
+    db=MySQLdb.connect(host="127.0.0.1", port=3306, user=user, passwd=passwd, db="football")
     cursor=db.cursor()
     
     sql="INSERT INTO competitions (name) SELECT * FROM (SELECT '" + competition + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM competitions WHERE name = '" + competition + "') LIMIT 1;"
