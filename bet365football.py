@@ -391,7 +391,9 @@ for competition in all_competitions:
                     pass
                     
             found_it=False
-            while not found_it:
+            stop=0
+            start=time.time()
+            while not found_it and stop-start<10:
                 try:
                     total_cards=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                     for tc in total_cards:
@@ -403,10 +405,13 @@ for competition in all_competitions:
                             break
                     
                 except:
+                    stop=time.time()
                     pass
              
             found_it=False
-            while not found_it:
+            stop=0
+            start=time.time()
+            while not found_it and stop-start<10:
                 try:
                     total_cards=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                     for tc in total_cards:
@@ -418,10 +423,13 @@ for competition in all_competitions:
                             break
                     
                 except:
+                    stop=time.time()
                     pass
                     
             found_it=False
-            while not found_it:
+            stop=0
+            start=time.time()
+            while not found_it and stop-start<10:
                 try:
                     total_cards=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                     for tc in total_cards:
@@ -442,10 +450,13 @@ for competition in all_competitions:
                             break
                     
                 except:
+                    stop=time.time()
                     pass   
 
             found_it=False
-            while not found_it:
+            stop=0
+            start=time.time()
+            while not found_it and stop-start<10:
                 try:
                     player_to_be_booked=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
                     for p in player_to_be_booked:
@@ -466,10 +477,13 @@ for competition in all_competitions:
                             found_it=True
                             break
                 except:
+                    stop=time.time()
                     pass
                     
             found_it=False
-            while not found_it:
+            stop=0
+            start=time.time()
+            while not found_it and stop-start<10:
                 try:
                     # players=driver.find_elements_by_class_name("gl-ParticipantBorderless_Name")
                     player_odds=driver.find_elements_by_class_name('gl-Market_General-cn2')
@@ -483,13 +497,9 @@ for competition in all_competitions:
                         found_it=True
 
                 except:
+                    stop=time.time()
                     pass
                     
-            
-
-            
-                            
-
             # we cut the list in half because the first half of the list ends up being garbage for some reason         
             player_odds[:]=player_odds[-len(players):]
             
