@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.12, for Win64 (x86_64)
 --
--- Host: localhost    Database: football
+-- Host: localhost    Database: bet365_football
 -- ------------------------------------------------------
 -- Server version	8.0.12
 
@@ -366,4 +366,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-08-23 20:48:38
+-- Dump completed on 2020-08-24 19:02:25
