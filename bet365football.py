@@ -68,37 +68,7 @@ for competition in all_competitions:
         except:
             pass
     
-    dts=[]
-    fixtures=[]
-    total_cards_odds=[]
-    total_cards_line=[]
-    total_cards_side=[]
-    asian_total_cards_odds=[]
-    asian_total_cards_line=[]
-    asian_total_cards_side=[]
-    team_cards_teams=[]
-    team_cards_side=[]
-    team_cards_line=[]
-    team_cards_odds=[]
-    players=[]
-    player_odds=[]
-    goalscorers=[]
-    anytime_odds=[]
-    alt_corner_lines=[]
-    alt_corner_over_odds=[]
-    alt_corner_exactly_odds=[]
-    alt_corner_under_odds=[]
-    corner_lines=[]
-    corner_over_odds=[]
-    corner_under_odds=[]
-    corner_match_up_odds=[]
-    corner_match_up_sides=[]
-    asian_corner_lines=[]
-    asian_corner_over_odds=[]
-    asian_corner_under_odds=[]
-    asian_handicap_teams=[]
-    asian_handicap_lines=[]
-    asian_handicap_odds=[]
+    
     
     # we cut the list in half because the first half of the list ends up being garbage for some reason
     teams[:]=teams[int(len(teams)/2):] 
@@ -116,22 +86,54 @@ for competition in all_competitions:
                      
     i=0        
     # loop through the number of fixtures and click on them to get data on each fixture (team_names=fixtures)
+    #while i<num_team_names:
+            
+    stop=0
+    start=time.time()
     while i<num_team_names:
+        dts=[]
+        fixtures=[]
+        total_cards_odds=[]
+        total_cards_line=[]
+        total_cards_side=[]
+        asian_total_cards_odds=[]
+        asian_total_cards_line=[]
+        asian_total_cards_side=[]
+        team_cards_teams=[]
+        team_cards_side=[]
+        team_cards_line=[]
+        team_cards_odds=[]
+        players=[]
+        player_odds=[]
+        goalscorers=[]
+        anytime_odds=[]
+        alt_corner_lines=[]
+        alt_corner_over_odds=[]
+        alt_corner_exactly_odds=[]
+        alt_corner_under_odds=[]
+        corner_lines=[]
+        corner_over_odds=[]
+        corner_under_odds=[]
+        corner_match_up_odds=[]
+        corner_match_up_sides=[]
+        asian_corner_lines=[]
+        asian_corner_over_odds=[]
+        asian_corner_under_odds=[]
+        asian_handicap_teams=[]
+        asian_handicap_lines=[]
+        asian_handicap_odds=[]
         
-        stop=0
-        start=time.time()
-        while True and stop-start<10:
-            try:
-                stop=time.time()
-                team_names=driver.find_elements_by_class_name('rcl-ParticipantFixtureDetails_TeamNames')
-                fixtures.append(team_names[i].text)
-                team_names[i].click()
-                i+=1
-                break
-            except:
-                stop=time.time()
-                pass
-        
+        try:
+            stop=time.time()
+            team_names=driver.find_elements_by_class_name('rcl-ParticipantFixtureDetails_TeamNames')
+            fixtures.append(team_names[i].text)
+            team_names[i].click()
+            i+=1
+            
+        except:
+            stop=time.time()
+            continue
+    
         stop=0
         start=time.time()
         while True and stop-start<10:
@@ -169,7 +171,7 @@ for competition in all_competitions:
             found_it=False
             stop=0
             start=time.time()
-            while not found_it and stop-start<10:
+            while not found_it and stop-start<30:
                 try:
                     stop=time.time()
                     headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
@@ -370,10 +372,11 @@ for competition in all_competitions:
                     for sl in show_less:
                         if sl.text=='Show less':
                             found_it=True
+                            break
                 except:
                     stop=time.time()
                     pass
-                    
+            
             found_it=False
             stop=0
             start=time.time()
@@ -398,7 +401,7 @@ for competition in all_competitions:
                     pass                
             
             print('Goalscorers: Done')
-                        
+            
             found_it=False
             stop=0
             start=time.time()
@@ -611,20 +614,22 @@ for competition in all_competitions:
                 
             try:    
                 for player in players:
-                    sql="INSERT INTO players (name) SELECT * FROM (SELECT '" + player + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM players WHERE name = '" + player + "') LIMIT 1;"
+                    sql="INSERT INTO players (name) SELECT * FROM (SELECT '" + player.replace("'","\\'") + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM players WHERE name = '" + player + "') LIMIT 1;"
                     cursor.execute(sql)
             except:
                 pass
-            
+
             try:
                 for goalscorer in goalscorers:
-                    sql="INSERT INTO players (name) SELECT * FROM (SELECT '" + goalscorer + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM players WHERE name = '" + goalscorer + "') LIMIT 1;"
+                    sql="INSERT INTO players (name) SELECT * FROM (SELECT '" + goalscorer.replace("'","\\'") + "' AS name) AS tmp WHERE NOT EXISTS (SELECT * FROM players WHERE name = '" + goalscorer.replace("'","\\'") + "') LIMIT 1;"
+
                     cursor.execute(sql)
             except:
                 pass
                 
             increment=0
             increment2=0
+            print('Fixtures = ' + str(fixtures))
             for m in range(len(fixtures)):
                 home_team_name=fixtures[m].split('\n')[0].strip()
                 away_team_name=fixtures[m].split('\n')[1].strip()
@@ -643,39 +648,39 @@ for competition in all_competitions:
                 fixture_id=cursor.fetchone()[0]
              
                 try:
-                    sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[i+increment]) + "','" + total_cards_side[i+increment] + "','" + total_cards_odds[i+increment] + "');"
+                    sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[m+increment]) + "','" + total_cards_side[m+increment] + "','" + total_cards_odds[m+increment] + "');"
                     cursor.execute(sql)
-                    sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[i+1+increment]) + "','" + total_cards_side[i+1+increment] + "','" + total_cards_odds[i+1+increment] + "');"
-                    cursor.execute(sql)
-                except:
-                    pass
-                
-                try:
-                    sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[i+increment]) + "','" + asian_total_cards_side[i+increment] + "','" + asian_total_cards_odds[i+increment] + "');"
-                    cursor.execute(sql)
-                    sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[i+1+increment]) + "','" + asian_total_cards_side[i+1+increment] + "','" + asian_total_cards_odds[i+1+increment] + "');"
+                    sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[m+1+increment]) + "','" + total_cards_side[m+1+increment] + "','" + total_cards_odds[m+1+increment] + "');"
                     cursor.execute(sql)
                 except:
                     pass
                 
                 try:
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[i+increment2] + "','" + team_cards_side[i+increment2] + "','" + team_cards_odds[i+increment2] + "');"
+                    sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[m+increment]) + "','" + asian_total_cards_side[m+increment] + "','" + asian_total_cards_odds[m+increment] + "');"
+                    cursor.execute(sql)
+                    sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[m+1+increment]) + "','" + asian_total_cards_side[m+1+increment] + "','" + asian_total_cards_odds[m+1+increment] + "');"
+                    cursor.execute(sql)
+                except:
+                    pass
+                
+                try:
+                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[m+increment2] + "','" + team_cards_side[m+increment2] + "','" + team_cards_odds[m+increment2] + "');"
                     cursor.execute(sql)
                     
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[i+1+increment2] + "','" + team_cards_side[i+1+increment2] + "','" + team_cards_odds[i+1+increment2] + "');"
+                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[m+1+increment2] + "','" + team_cards_side[m+1+increment2] + "','" + team_cards_odds[m+1+increment2] + "');"
                     cursor.execute(sql)
                     
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[i+2+increment2] + "','" + team_cards_side[i+2+increment2] + "','" + team_cards_odds[i+2+increment2] + "');"
+                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[m+2+increment2] + "','" + team_cards_side[m+2+increment2] + "','" + team_cards_odds[m+2+increment2] + "');"
                     cursor.execute(sql)
                     
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[i+3+increment2] + "','" + team_cards_side[i+3+increment2] + "','" + team_cards_odds[i+3+increment2] + "');"
+                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[m+3+increment2] + "','" + team_cards_side[m+3+increment2] + "','" + team_cards_odds[m+3+increment2] + "');"
                     cursor.execute(sql)
                 except:
                     pass
                 
                 try:
                     for j in range(len(players)):
-                        sql="SELECT id FROM players WHERE name = '" + players[j] + "';"
+                        sql="SELECT id FROM players WHERE name = '" + players[j].replace("'","\\'") + "';"
                         cursor.execute(sql)
                         player_id=cursor.fetchone()[0]
                         
@@ -683,10 +688,10 @@ for competition in all_competitions:
                         cursor.execute(sql)
                 except:
                     pass
-                    
+                       
                 try:    
                     for j in range(len(goalscorers)):
-                        sql="SELECT id FROM players WHERE name = '" + goalscorers[j] + "';"
+                        sql="SELECT id FROM players WHERE name = '" + goalscorers[j].replace("'","\\'") + "';"
                         cursor.execute(sql)
                         player_id=cursor.fetchone()[0]
                         
@@ -703,14 +708,14 @@ for competition in all_competitions:
                         cursor.execute(sql)
                 except:
                     pass
-                    
+                     
                 try:    
-                    for j in range(len(asian_corner_over_odds)):
+                    for j in range(len(alt_corner_over_odds)):
                         sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Over','" + str(alt_corner_over_odds[j]) + "');"
                         cursor.execute(sql)
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "'Exactly','" + str(alt_corner_exactly_odds[j]) + "');"
+                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Exactly','" + str(alt_corner_exactly_odds[j]) + "');"
                         cursor.execute(sql)
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "'Under','" + str(alt_corner_under_odds[j]) + "');"
+                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Under','" + str(alt_corner_under_odds[j]) + "');"
                         cursor.execute(sql)
                 except:
                     pass
@@ -719,21 +724,24 @@ for competition in all_competitions:
                     for j in range(len(asian_corner_over_odds)):
                         sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "','Over','" + str(asian_corner_over_odds[j]) + "');"
                         cursor.execute(sql)
-                        sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "'Under','" + str(asian_corner_under_odds[j]) + "');"
+                        sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "','Under','" + str(asian_corner_under_odds[j]) + "');"
                         cursor.execute(sql)  
                 except:
                     pass
                     
                 try:
                     for j in range(len(corner_match_up_odds)):
-                        sql="INSERT INTO corner_match_bet (fixture_id, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_match_up_sides[j]) + "','" + str(corner_match_up_odds[j]) + "');"
+                        sql="INSERT INTO corners_match_bet (fixture_id, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_match_up_sides[j]) + "','" + str(corner_match_up_odds[j]) + "');"
                         cursor.execute(sql)
                 except:
                     pass
                 
                 try:
-                    for j in range(len(asian_handicap_corners)):
-                        sql="INSERT INTO asian_handicap_corners (fixture_id, team_id, line, odds) VALUES (" + str(fixture_id) + "," + str(asian_handicap_teams[j]) + "','" + str(asian_handicap_lines[j]) + "','" + str(asian_handicap_odds[j]) + "');"
+                    for j in range(len(asian_handicap_odds)):
+                        sql="SELECT id FROM teams WHERE name = '" + asian_handicap_teams[j] + "';"
+                        cursor.execute(sql)
+                        team=cursor.fetchone()[0]
+                        sql="INSERT INTO asian_handicap_corners (fixture_id, team_id, line, odds) VALUES (" + str(fixture_id) + "," + str(team) + ",'" + str(asian_handicap_lines[j]) + "','" + str(asian_handicap_odds[j]) + "');"
                         cursor.execute(sql)
                 except:
                     pass
