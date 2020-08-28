@@ -18,6 +18,7 @@ cursor=db.cursor()
 for competition in all_competitions:
 
     driver = uc.Chrome()
+    #driver.implicitly_wait(10)
     driver.get('https://bet365.com')
 
     while True:
@@ -39,7 +40,19 @@ for competition in all_competitions:
         if elem.text=='Soccer':
             elem.click()
             break
-                    
+            
+    found_it=False
+    while not found_it:
+        try:
+            down_arrow=driver.find_elements_by_css_selector("div.sm-SplashMarket_Header:not(.sm-SplashMarket_HeaderOpen)")
+            time.sleep(3)
+            for arrow in down_arrow:
+                driver.execute_script("arguments[0].click();", arrow)
+                found_it=True
+        except:
+            pass        
+    time.sleep(5)     
+       
     found_it=False      
     while not found_it:
         try:
@@ -126,9 +139,32 @@ for competition in all_competitions:
         try:
             stop=time.time()
             team_names=driver.find_elements_by_class_name('rcl-ParticipantFixtureDetails_TeamNames')
-            fixtures.append(team_names[i].text)
-            team_names[i].click()
-            i+=1
+            # if we already have these fixtures, we can move on to the next one
+            home_team_name=team_names[i].text.split('\n')[0].strip()
+            away_team_name=team_names[i].text.split('\n')[1].strip()
+            sql="SELECT id FROM teams WHERE name = '" + home_team_name + "';"
+            cursor.execute(sql)
+            home_id=cursor.fetchone()       
+            sql="SELECT id FROM teams WHERE name = '" + away_team_name + "';"
+            cursor.execute(sql)
+            away_id=cursor.fetchone()
+            if home_id is not None and away_id is not None:
+                sql="SELECT * FROM fixtures WHERE home_team_id = " + str(home_id[0]) + " AND away_team_id = " + str(away_id[0]) + ";"
+                cursor.execute(sql)
+                result=cursor.fetchone()
+
+                if result is None:
+                    fixtures.append(team_names[i].text)
+                    team_names[i].click()
+                    i+=1
+                else:
+                    i+=1
+                    driver.get(current_url)
+                    continue
+            else:
+                fixtures.append(team_names[i].text)
+                team_names[i].click()
+                i+=1
             
         except:
             stop=time.time()
@@ -136,6 +172,7 @@ for competition in all_competitions:
     
         stop=0
         start=time.time()
+        found_it=False
         while True and stop-start<10:
             try:
                 stop=time.time()
@@ -171,7 +208,7 @@ for competition in all_competitions:
             found_it=False
             stop=0
             start=time.time()
-            while not found_it and stop-start<30:
+            while not found_it and stop-start<10:
                 try:
                     stop=time.time()
                     headers=driver.find_elements_by_class_name('gl-MarketGroupButton_Text')
@@ -190,7 +227,7 @@ for competition in all_competitions:
                                 for item in items:
                                     alt_corner_over_odds.append(item.text)
                                     found_it=True  
-
+                            print(alt_corner_over_odds)
                             col3=driver.find_elements_by_xpath('//*[text() = "Alternative Corners"]/parent::div/parent::div/div[position()=2]/div/div[position()=3]')        
                             for col in col3:
                                 items=col.find_elements_by_class_name('gl-ParticipantOddsOnly_Odds')
