@@ -106,6 +106,7 @@ for competition in all_competitions:
     while i<num_team_names:
         dts=[]
         fixtures=[]
+        fixture_ids=[]
         total_cards_odds=[]
         total_cards_line=[]
         total_cards_side=[]
@@ -149,20 +150,24 @@ for competition in all_competitions:
             cursor.execute(sql)
             away_id=cursor.fetchone()
             if home_id is not None and away_id is not None:
-                sql="SELECT * FROM fixtures WHERE home_team_id = " + str(home_id[0]) + " AND away_team_id = " + str(away_id[0]) + ";"
+                sql="SELECT id FROM fixtures WHERE home_team_id = " + str(home_id[0]) + " AND away_team_id = " + str(away_id[0]) + ";"
                 cursor.execute(sql)
                 result=cursor.fetchone()
 
                 if result is None:
                     fixtures.append(team_names[i].text)
+                    fixture_ids.append(0)
                     team_names[i].click()
                     i+=1
                 else:
+                    # we have this fixture, so no need to add it
+                    fixtures.append(team_names[i].text)
+                    fixture_ids.append(result[0])
+                    team_names[i].click()
                     i+=1
-                    driver.get(current_url)
-                    continue
             else:
                 fixtures.append(team_names[i].text)
+                fixture_ids.append(0)
                 team_names[i].click()
                 i+=1
             
@@ -668,6 +673,7 @@ for competition in all_competitions:
             increment2=0
             print('Fixtures = ' + str(fixtures))
             for m in range(len(fixtures)):
+            
                 home_team_name=fixtures[m].split('\n')[0].strip()
                 away_team_name=fixtures[m].split('\n')[1].strip()
                 sql="SELECT id FROM teams WHERE name = '" + home_team_name + "';"
@@ -676,116 +682,235 @@ for competition in all_competitions:
                 sql="SELECT id FROM teams WHERE name = '" + away_team_name + "';"
                 cursor.execute(sql)
                 away_result=cursor.fetchone()[0]
-                sql="SELECT id FROM competitions WHERE name = '" + competition + "';"
-                cursor.execute(sql)
-                competition_id=cursor.fetchone()[0]
-                sql="INSERT INTO fixtures (dt, home_team_id, away_team_id, competition_id) VALUES ('" + dts[m] + "'," + str(home_result) + "," + str(away_result) + "," + str(competition_id) + ");"
-                cursor.execute(sql)
-                cursor.execute("SELECT LAST_INSERT_ID()")
-                fixture_id=cursor.fetchone()[0]
-             
-                try:
-                    sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[m+increment]) + "','" + total_cards_side[m+increment] + "','" + total_cards_odds[m+increment] + "');"
-                    cursor.execute(sql)
-                    sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[m+1+increment]) + "','" + total_cards_side[m+1+increment] + "','" + total_cards_odds[m+1+increment] + "');"
-                    cursor.execute(sql)
-                except:
-                    pass
                 
-                try:
-                    sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[m+increment]) + "','" + asian_total_cards_side[m+increment] + "','" + asian_total_cards_odds[m+increment] + "');"
+                if fixture_ids[m]==0:            
+                    
+                    sql="SELECT id FROM competitions WHERE name = '" + competition + "';"
                     cursor.execute(sql)
-                    sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[m+1+increment]) + "','" + asian_total_cards_side[m+1+increment] + "','" + asian_total_cards_odds[m+1+increment] + "');"
+                    competition_id=cursor.fetchone()[0]
+                    sql="INSERT INTO fixtures (dt, home_team_id, away_team_id, competition_id) VALUES ('" + dts[m] + "'," + str(home_result) + "," + str(away_result) + "," + str(competition_id) + ");"
                     cursor.execute(sql)
-                except:
-                    pass
-                
-                try:
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[m+increment2] + "','" + team_cards_side[m+increment2] + "','" + team_cards_odds[m+increment2] + "');"
+                    cursor.execute("SELECT LAST_INSERT_ID()")
+                    fixture_id=cursor.fetchone()[0]
+                 
+                    try:
+                        sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[m+increment]) + "','" + total_cards_side[m+increment] + "','" + total_cards_odds[m+increment] + "');"
+                        cursor.execute(sql)
+                        sql="INSERT INTO total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(total_cards_line[m+1+increment]) + "','" + total_cards_side[m+1+increment] + "','" + total_cards_odds[m+1+increment] + "');"
+                        cursor.execute(sql)
+                    except:
+                        pass
+                    
+                    try:
+                        sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[m+increment]) + "','" + asian_total_cards_side[m+increment] + "','" + asian_total_cards_odds[m+increment] + "');"
+                        cursor.execute(sql)
+                        sql="INSERT INTO asian_total_cards (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_total_cards_line[m+1+increment]) + "','" + asian_total_cards_side[m+1+increment] + "','" + asian_total_cards_odds[m+1+increment] + "');"
+                        cursor.execute(sql)
+                    except:
+                        pass
+                    
+                    try:
+                        sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[m+increment2] + "','" + team_cards_side[m+increment2] + "','" + team_cards_odds[m+increment2] + "');"
+                        cursor.execute(sql)
+                        
+                        sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[m+1+increment2] + "','" + team_cards_side[m+1+increment2] + "','" + team_cards_odds[m+1+increment2] + "');"
+                        cursor.execute(sql)
+                        
+                        sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[m+2+increment2] + "','" + team_cards_side[m+2+increment2] + "','" + team_cards_odds[m+2+increment2] + "');"
+                        cursor.execute(sql)
+                        
+                        sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[m+3+increment2] + "','" + team_cards_side[m+3+increment2] + "','" + team_cards_odds[m+3+increment2] + "');"
+                        cursor.execute(sql)
+                    except:
+                        pass
+                    
+                    try:
+                        for j in range(len(players)):
+                            sql="SELECT id FROM players WHERE name = '" + players[j].replace("'","\\'") + "';"
+                            cursor.execute(sql)
+                            player_id=cursor.fetchone()[0]
+                            
+                            sql="INSERT INTO player_to_be_carded (fixture_id, player_id, odds) VALUES (" + str(fixture_id) + "," + str(player_id) + ",'" + str(player_odds[j]) + "');"
+                            cursor.execute(sql)
+                    except:
+                        pass
+                           
+                    try:    
+                        for j in range(len(goalscorers)):
+                            sql="SELECT id FROM players WHERE name = '" + goalscorers[j].replace("'","\\'") + "';"
+                            cursor.execute(sql)
+                            player_id=cursor.fetchone()[0]
+                            
+                            sql="INSERT INTO goalscorer (fixture_id, player_id, odds) VALUES (" + str(fixture_id) + "," + str(player_id) + ",'" + str(anytime_odds[j]) + "');"
+                            cursor.execute(sql)
+                    except:
+                        pass
+                        
+                    try:    
+                        for j in range(len(corner_over_odds)):
+                            sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_lines[j]) + "','Over','" + str(corner_over_odds[j]) + "');"
+                            cursor.execute(sql)
+                            sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_lines[j]) + "','Under','" + str(corner_under_odds[j]) + "');"
+                            cursor.execute(sql)
+                    except:
+                        pass
+                         
+                    try:    
+                        for j in range(len(alt_corner_over_odds)):
+                            sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Over','" + str(alt_corner_over_odds[j]) + "');"
+                            cursor.execute(sql)
+                            sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Exactly','" + str(alt_corner_exactly_odds[j]) + "');"
+                            cursor.execute(sql)
+                            sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Under','" + str(alt_corner_under_odds[j]) + "');"
+                            cursor.execute(sql)
+                    except:
+                        pass
+                        
+                    try:    
+                        for j in range(len(asian_corner_over_odds)):
+                            sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "','Over','" + str(asian_corner_over_odds[j]) + "');"
+                            cursor.execute(sql)
+                            sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "','Under','" + str(asian_corner_under_odds[j]) + "');"
+                            cursor.execute(sql)  
+                    except:
+                        pass
+                        
+                    try:
+                        for j in range(len(corner_match_up_odds)):
+                            sql="INSERT INTO corners_match_bet (fixture_id, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_match_up_sides[j]) + "','" + str(corner_match_up_odds[j]) + "');"
+                            cursor.execute(sql)
+                    except:
+                        pass
+                    
+                    try:
+                        for j in range(len(asian_handicap_odds)):
+                            sql="SELECT id FROM teams WHERE name = '" + asian_handicap_teams[j] + "';"
+                            cursor.execute(sql)
+                            team=cursor.fetchone()[0]
+                            sql="INSERT INTO asian_handicap_corners (fixture_id, team_id, line, odds) VALUES (" + str(fixture_id) + "," + str(team) + ",'" + str(asian_handicap_lines[j]) + "','" + str(asian_handicap_odds[j]) + "');"
+                            cursor.execute(sql)
+                    except:
+                        pass
+                    
+                    
+                    
+                else:
+                    sql=("UPDATE total_cards "
+                         "SET line = " + str(total_cards_line[m+increment]) + ", "
+                         "    odds = " + str(total_cards_odds[m+increment]) + " "
+                         "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Over';")
+                    cursor.execute(sql)
+                    sql=("UPDATE total_cards "
+                         "SET line = " + str(total_cards_line[m+1+increment]) + ", "
+                         "    odds = " + str(total_cards_odds[m+1+increment]) + " "
+                         "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Under';")
                     cursor.execute(sql)
                     
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(home_result) + ",'" + team_cards_line[m+1+increment2] + "','" + team_cards_side[m+1+increment2] + "','" + team_cards_odds[m+1+increment2] + "');"
+                    sql=("UPDATE team_cards "
+                         "SET line = '" + team_cards_line[m+increment2] + "', "
+                         "    odds = '" + team_cards_odds[m+increment2] + "' "
+                         "WHERE fixture_id = " + str(fixture_ids[m]) + " and side ='" + team_cards_side[m+increment2] + "' and team_id = " + str(home_result) + ";")
+                    cursor.execute(sql)     
+                    
+                    sql=("UPDATE team_cards "
+                         "SET line = '" + team_cards_line[m+1+increment2] + "', "
+                         "    odds = '" + team_cards_odds[m+1+increment2] + "' "
+                         "WHERE fixture_id = " + str(fixture_ids[m]) + " and side ='" + team_cards_side[m+1+increment2] + "' and team_id = " + str(home_result) + ";")
+                    cursor.execute(sql)
+                         
+                    sql=("UPDATE team_cards "
+                         "SET line = '" + team_cards_line[m+2+increment2] + "', "
+                         "    odds = '" + team_cards_odds[m+2+increment2] + "' "
+                         "WHERE fixture_id = " + str(fixture_ids[m]) + " and side ='" + team_cards_side[m+2+increment2] + "' and team_id = " + str(away_result) + ";")
+                    cursor.execute(sql)     
+                    
+                    sql=("UPDATE team_cards "
+                         "SET line = '" + team_cards_line[m+3+increment2] + "', "
+                         "    odds = '" + team_cards_odds[m+3+increment2] + "' "
+                         "WHERE fixture_id = " + str(fixture_ids[m]) + " and side ='" + team_cards_side[m+3+increment2] + "' and team_id = " + str(away_result) + ";")
                     cursor.execute(sql)
                     
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[m+2+increment2] + "','" + team_cards_side[m+2+increment2] + "','" + team_cards_odds[m+2+increment2] + "');"
-                    cursor.execute(sql)
-                    
-                    sql="INSERT INTO team_cards (fixture_id, team_id, line, side, odds) VALUES (" + str(fixture_id) + "," + str(away_result) + ",'" + team_cards_line[m+3+increment2] + "','" + team_cards_side[m+3+increment2] + "','" + team_cards_odds[m+3+increment2] + "');"
-                    cursor.execute(sql)
-                except:
-                    pass
-                
-                try:
                     for j in range(len(players)):
                         sql="SELECT id FROM players WHERE name = '" + players[j].replace("'","\\'") + "';"
                         cursor.execute(sql)
                         player_id=cursor.fetchone()[0]
                         
-                        sql="INSERT INTO player_to_be_carded (fixture_id, player_id, odds) VALUES (" + str(fixture_id) + "," + str(player_id) + ",'" + str(player_odds[j]) + "');"
+                        sql=("UPDATE player_to_be_carded "
+                             "SET odds = '" + str(player_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and player_id = " + str(player_id) + ";")
                         cursor.execute(sql)
-                except:
-                    pass
-                       
-                try:    
+                    
                     for j in range(len(goalscorers)):
                         sql="SELECT id FROM players WHERE name = '" + goalscorers[j].replace("'","\\'") + "';"
                         cursor.execute(sql)
                         player_id=cursor.fetchone()[0]
                         
-                        sql="INSERT INTO goalscorer (fixture_id, player_id, odds) VALUES (" + str(fixture_id) + "," + str(player_id) + ",'" + str(anytime_odds[j]) + "');"
+                        sql=("UPDATE goalscorer "
+                             "SET odds = '" + str(anytime_odds[j]) + "' "
+                             "WHERE fixture_id = " + fixture_ids[m] + " and player_id = " + str(player_id) + ";")
                         cursor.execute(sql)
-                except:
-                    pass
-                    
-                try:    
+                        
                     for j in range(len(corner_over_odds)):
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_lines[j]) + "','Over','" + str(corner_over_odds[j]) + "');"
-                        cursor.execute(sql)
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_lines[j]) + "','Under','" + str(corner_under_odds[j]) + "');"
-                        cursor.execute(sql)
-                except:
-                    pass
-                     
-                try:    
-                    for j in range(len(alt_corner_over_odds)):
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Over','" + str(alt_corner_over_odds[j]) + "');"
-                        cursor.execute(sql)
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Exactly','" + str(alt_corner_exactly_odds[j]) + "');"
-                        cursor.execute(sql)
-                        sql="INSERT INTO total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(alt_corner_lines[j]) + "','Under','" + str(alt_corner_under_odds[j]) + "');"
-                        cursor.execute(sql)
-                except:
-                    pass
-                    
-                try:    
-                    for j in range(len(asian_corner_over_odds)):
-                        sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "','Over','" + str(asian_corner_over_odds[j]) + "');"
-                        cursor.execute(sql)
-                        sql="INSERT INTO asian_total_corners (fixture_id, line, side, odds) VALUES (" + str(fixture_id) + ",'" + str(asian_corner_lines[j]) + "','Under','" + str(asian_corner_under_odds[j]) + "');"
+                        sql=("UPDATE total_corners "
+                             "SET line = '" + str(corner_lines[j]) + "', "
+                             "    odds = '" + str(corner_over_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Over';")
                         cursor.execute(sql)  
-                except:
-                    pass
-                    
-                try:
-                    for j in range(len(corner_match_up_odds)):
-                        sql="INSERT INTO corners_match_bet (fixture_id, side, odds) VALUES (" + str(fixture_id) + ",'" + str(corner_match_up_sides[j]) + "','" + str(corner_match_up_odds[j]) + "');"
+                        sql=("UPDATE total_corners "
+                             "SET line = '" + str(corner_lines[j]) + "', "
+                             "    odds = '" + str(corner_under_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Under';")
+                        cursor.execute(sql)   
+
+                    for j in range(len(alt_corner_over_odds)):
+                        sql=("UPDATE total_corners "
+                             "SET line = '" + str(alt_corner_lines[j]) + "', "
+                             "    odds = '" + str(alt_corner_over_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Over';")
+                        cursor.execute(sql)  
+                        sql=("UPDATE total_corners "
+                             "SET line = '" + str(alt_corner_lines[j]) + "', "
+                             "    odds = '" + str(alt_corner_exactly_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Exactly';")
                         cursor.execute(sql)
-                except:
-                    pass
-                
-                try:
+                        sql=("UPDATE total_corners "
+                             "SET line = '" + str(alt_corner_lines[j]) + "', "
+                             "    odds = '" + str(alt_corner_under_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Under';")
+                        cursor.execute(sql)
+                    
+                    for j in range(len(corner_over_odds)):
+                        sql=("UPDATE asian_total_corners "
+                             "SET line = '" + str(asian_corner_lines[j]) + "', "
+                             "    odds = '" + str(asian_corner_over_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Over';")
+                        cursor.execute(sql)  
+                        sql=("UPDATE asian_total_corners "
+                             "SET line = '" + str(asian_corner_lines[j]) + "', "
+                             "    odds = '" + str(asian_corner_under_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = 'Under';")
+                        cursor.execute(sql)
+                        
+                    for j in range(len(corner_match_up_odds)):
+                        sql=("UPDATE corners_match_bet "
+                             "SET odds = '" + str(corner_match_up_odds[j]) + "' "
+                             "WHERE fixture_id = " + str(fixture_ids[m]) + " and side = '" + str(corner_match_up_sides[j]) + "';")
+                        cursor.execute(sql)
+                    
                     for j in range(len(asian_handicap_odds)):
                         sql="SELECT id FROM teams WHERE name = '" + asian_handicap_teams[j] + "';"
                         cursor.execute(sql)
                         team=cursor.fetchone()[0]
-                        sql="INSERT INTO asian_handicap_corners (fixture_id, team_id, line, odds) VALUES (" + str(fixture_id) + "," + str(team) + ",'" + str(asian_handicap_lines[j]) + "','" + str(asian_handicap_odds[j]) + "');"
+                        
+                        sql=("UPDATE asian_handicap_corners "
+                             "SET line = '" + str(asian_handicap_lines[j]) + "', "
+                             "    odds = '" + str(asian_handicap_odds[j]) + "' "
+                             "WHERE fixture_id = " + fixtures_ids[m] + " and team_id = " + str(team) + ";")
                         cursor.execute(sql)
-                except:
-                    pass
                 
                 increment+=1
                 increment2+=3
-    
+                
     db.commit()    
     cursor.close()
     db.close()           
